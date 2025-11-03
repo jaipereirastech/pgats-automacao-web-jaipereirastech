@@ -1,7 +1,11 @@
 name: Web E2E Tests
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # permite execução manual
+  push:
+    branches: [main] # opcional: executa nos commits para main
+  pull_request:
+    branches: [main]
 
 jobs:
   e2e-tests:
