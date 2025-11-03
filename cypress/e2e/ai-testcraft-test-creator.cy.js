@@ -7,8 +7,8 @@ import modalPage from '../support/pageObjects/modalPage';
 
 describe('New Transaction Modal Form Tests', () => {
   beforeEach(() => {
-    cy.visit('https://devfinance-agilizei.netlify.app/#');
-    cy.contains("Nova Transação").click()
+    cy.visit('https://devfinance-agilizei.netlify.app/#', { timeout: 60000 });
+    cy.contains('Nova Transação', { timeout: 10000 }).should('be.visible').click();
   });
 
   it('Verify that the user can successfully submit the form with valid inputs for description, amount, and date.', () => {
