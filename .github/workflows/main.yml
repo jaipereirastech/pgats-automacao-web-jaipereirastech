@@ -1,32 +1,59 @@
 name: Web E2E Tests
 
-on: 
-  workflow_dispatch:
+on:
+  workflow_dispatch: # permite execução manual
+  push:
+    branches: [main] # opcional: executa nos commits para main
+  pull_request:
+    branches: [main]
 
 jobs:
   e2e-tests:
-
     runs-on: ubuntu-latest
 
-    steps: 
+    steps:
+      # 1️⃣ Clonar o repositório
+      - name: Checkout do código
+        uses: actions/checkout@v4
 
-      # clone do projeto para a máquina
-      - uses: actions/checkout@v4
+      # 2️⃣ Instalar Node.js
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # ou a versão que você usa
 
-      # Conferir a versão instalada
-      - name: Node version
-        run: node --version
+      # 3️⃣ Instalar dependências
+      - name: Instalar dependências
+        run: npm ci
 
-      - name: Instalando dependências
-        run: npm install
+      # 4️⃣ Verificar se o arquivo de suporte existe (evita o erro)
+      - name: Garantir arquivo de suporte do Cypress
+        run: |
+          mkdir -p cypress/support
+          if [ ! -f cypress/support/e2e.js ]; then
+            echo "// suporte básico criado automaticamente" > cypress/support/e2e.js
+          fi
 
-      - name: Executando os testes
+      # 5️⃣ (Opcional) Start da aplicação web antes dos testes
+      - name: Iniciar aplicação
+        run: npm start &
+        env:
+          CI: true
+
+      # 6️⃣ Esperar aplicação estar online (ex: localhost:3000)
+      - name: Aguardar servidor
+        run: npx wait-on http://localhost:3000
+
+      # 7️⃣ Executar Cypress
+      - name: Executar Cypress
         run: npx cypress run
 
-      - uses: actions/upload-artifact@v4
+      # 8️⃣ Upload de artefatos (vídeos, screenshots, relatórios)
+      - name: Upload de relatórios e vídeos
         if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
         with:
-          name: relatorios
+          name: relatorios-cypress
           path: |
             cypress/reports
             cypress/screenshots
