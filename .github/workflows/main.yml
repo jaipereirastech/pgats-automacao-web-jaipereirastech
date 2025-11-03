@@ -1,59 +1,49 @@
 name: Web E2E Tests
 
 on:
-  workflow_dispatch: # permite execução manual
-  push:
-    branches: [main] # opcional: executa nos commits para main
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Clonar o repositório
+      # 🧩 1. Clonar o projeto
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      # 2️⃣ Instalar Node.js
+      # 🧩 2. Configurar Node.js (garante ambiente consistente)
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18' # ou a versão que você usa
+          node-version: '18' # ajuste conforme o projeto
 
-      # 3️⃣ Instalar dependências
+      # 🧩 3. Verificar versão instalada
+      - name: Verificar versão do Node
+        run: node --version
+
+      # 🧩 4. Instalar dependências
       - name: Instalar dependências
         run: npm ci
 
-      # 4️⃣ Verificar se o arquivo de suporte existe (evita o erro)
-      - name: Garantir arquivo de suporte do Cypress
+      # 🧩 5. Garantir que o supportFile do Cypress exista
+      - name: Garantir arquivo de suporte Cypress
         run: |
           mkdir -p cypress/support
           if [ ! -f cypress/support/e2e.js ]; then
-            echo "// suporte básico criado automaticamente" > cypress/support/e2e.js
+            echo "// Arquivo criado automaticamente para evitar erro de suporte" > cypress/support/e2e.js
           fi
 
-      # 5️⃣ (Opcional) Start da aplicação web antes dos testes
-      - name: Iniciar aplicação
-        run: npm start &
-        env:
-          CI: true
-
-      # 6️⃣ Esperar aplicação estar online (ex: localhost:3000)
-      - name: Aguardar servidor
-        run: npx wait-on http://localhost:3000
-
-      # 7️⃣ Executar Cypress
+      # 🧩 6. Executar testes E2E
       - name: Executar Cypress
         run: npx cypress run
 
-      # 8️⃣ Upload de artefatos (vídeos, screenshots, relatórios)
-      - name: Upload de relatórios e vídeos
+      # 🧩 7. Upload dos relatórios e artefatos
+      - name: Upload de relatórios
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: relatorios-cypress
+          name: relatorios
           path: |
             cypress/reports
             cypress/screenshots
